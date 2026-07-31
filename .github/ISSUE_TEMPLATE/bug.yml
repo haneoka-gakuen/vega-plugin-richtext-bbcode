@@ -1,0 +1,25 @@
+name: Bug report
+description: Report a reproducible BBCode rendering or sanitization defect
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: "@haneoka/vega-plugin-richtext-bbcode 0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal BBCode reproduction
+      description: Include the exact source, display mode, and remote-image option.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true

@@ -1,0 +1,91 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@bbob/html':
+        specifier: 4.4.1
+        version: 4.4.1
+      '@bbob/parser':
+        specifier: 4.4.1
+        version: 4.4.1
+      dompurify:
+        specifier: 3.4.12
+        version: 3.4.12
+    devDependencies:
+      '@haneoka/vega':
+        specifier: workspace:*
+        version: link:.dependencies/vega
+      '@haneoka/vega-plugin-richtext':
+        specifier: workspace:*
+        version: link:.dependencies/vega-plugin-richtext
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+packages:
+
+  '@bbob/core@4.4.1':
+    resolution: {integrity: sha512-+/p5zQryGVbviM6MUCtHZL3TBtsPFLynCClgiWpQgonYunzIifVaPq8wkA3tnYRrz8rTVC2CMEaiGr16/KV+zw==}
+
+  '@bbob/html@4.4.1':
+    resolution: {integrity: sha512-pR2SruL2LmQEDDjZ+HrkW1wFtUkyTJN4tdUWQelLiRggAzR1XOH5ZtVSGfPlWzX5HvdjGjITxkvtCBuGaESegw==}
+
+  '@bbob/parser@4.4.1':
+    resolution: {integrity: sha512-Hs6caDSsY5zJdZZpj7ohTz4hQZGKPL+ZgZy+qbgDtfD9WV2YGxFGtXQf7PBu/aIRKOrkGgbCQxDYWlCEyONi9w==}
+
+  '@bbob/plugin-helper@4.4.1':
+    resolution: {integrity: sha512-vTjwNiiIHhihyD41DuxrUFVCuGPr1EB1fXvy5+HHnmcvWmOH5BzPSgSEs+KCdpWF+hIDMAho2toAHiDmYurCJQ==}
+
+  '@bbob/types@4.4.1':
+    resolution: {integrity: sha512-IDu7H3J9yMQG0U//0X4Akbbm3SOIKfeLmgPHO4s3s+WPsl+AeGb6dy4XBFLEDcDIN/N3f8WPibhIjLr0gFQ7Fg==}
+
+  '@types/trusted-types@2.0.7':
+    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+
+  dompurify@3.4.12:
+    resolution: {integrity: sha512-zQvGet8Z2sWbQhCmfFz/T5QWH2oBmjnqK3qvOjaqaNLrLEF912WamU+ohnTp0TCep/MFVHpdJuCZEdFOdTnEFg==}
+
+  typescript@6.0.3:
+    resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+snapshots:
+
+  '@bbob/core@4.4.1':
+    dependencies:
+      '@bbob/parser': 4.4.1
+      '@bbob/plugin-helper': 4.4.1
+      '@bbob/types': 4.4.1
+
+  '@bbob/html@4.4.1':
+    dependencies:
+      '@bbob/core': 4.4.1
+      '@bbob/plugin-helper': 4.4.1
+      '@bbob/types': 4.4.1
+
+  '@bbob/parser@4.4.1':
+    dependencies:
+      '@bbob/plugin-helper': 4.4.1
+      '@bbob/types': 4.4.1
+
+  '@bbob/plugin-helper@4.4.1':
+    dependencies:
+      '@bbob/types': 4.4.1
+
+  '@bbob/types@4.4.1': {}
+
+  '@types/trusted-types@2.0.7':
+    optional: true
+
+  dompurify@3.4.12:
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
+
+  typescript@6.0.3: {}

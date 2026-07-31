@@ -1,0 +1,18 @@
+name: Feature proposal
+description: Propose a portable BBCode renderer capability
+title: "[Proposal] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+    validations:
+      required: true
+  - type: textarea
+    id: policy
+    attributes:
+      label: Syntax and security policy
+      description: Describe malformed-input behavior and the required sanitization boundary.
+    validations:
+      required: true
