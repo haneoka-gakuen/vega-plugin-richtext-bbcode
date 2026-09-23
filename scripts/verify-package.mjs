@@ -1,18 +1,11 @@
 import { readFile } from "node:fs/promises";
 
-const manifest = JSON.parse(
-  await readFile(new URL("../package.json", import.meta.url), "utf8"),
-);
+const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
 
 if (!manifest.repository?.url?.endsWith("/vega-plugin-richtext-bbcode.git")) {
-  throw new Error(
-    "package repository must point to the independent BBCode plugin repository",
-  );
+  throw new Error("package repository must point to the independent BBCode plugin repository");
 }
-if (
-  manifest.publishConfig?.access !== "public" ||
-  manifest.publishConfig?.provenance !== true
-) {
+if (manifest.publishConfig?.access !== "public" || manifest.publishConfig?.provenance !== true) {
   throw new Error("public provenance publishing is required");
 }
 if (!manifest.vega?.capabilities?.includes("rich-text")) {
@@ -25,9 +18,7 @@ if (
 ) {
   throw new Error("reviewed parser, renderer, and sanitizer versions must be pinned");
 }
-if (
-  manifest.peerDependencies?.["@haneoka/vega-plugin-richtext"] !== "^0.1.0"
-) {
+if (manifest.peerDependencies?.["@haneoka/vega-plugin-richtext"] !== "^0.1.0") {
   throw new Error("the format-neutral rich-text service must be a peer");
 }
 

@@ -1,11 +1,7 @@
 import { render as renderBbobHtml } from "@bbob/html";
 import parseBbob, { createLexer } from "@bbob/parser";
 import createDOMPurify, { type Config } from "dompurify";
-import {
-  defineVegaPlugin,
-  type VegaPlugin,
-  type VegaPluginContext,
-} from "@haneoka/vega/plugin";
+import { defineVegaPlugin, type VegaPlugin, type VegaPluginContext } from "@haneoka/vega/plugin";
 import {
   VEGA_RICH_TEXT_SERVICE,
   type VegaRichTextHandle,
@@ -121,54 +117,28 @@ const DROPPED_TAGS = new Set([
   "video",
 ]);
 
-const ATTRIBUTES_BY_TAG: Readonly<Record<string, ReadonlySet<string>>> =
-  Object.freeze({
-    a: new Set(["href", "rel"]),
-    font: new Set(["color", "size"]),
-    img: new Set([
-      "alt",
-      "decoding",
-      "loading",
-      "referrerpolicy",
-      "src",
-    ]),
-    ol: new Set(["type"]),
-  });
+const ATTRIBUTES_BY_TAG: Readonly<Record<string, ReadonlySet<string>>> = Object.freeze({
+  a: new Set(["href", "rel"]),
+  font: new Set(["color", "size"]),
+  img: new Set(["alt", "decoding", "loading", "referrerpolicy", "src"]),
+  ol: new Set(["type"]),
+});
 
 const SAFE_URI = /^(?:(?:https?):\/\/|mailto:)/iu;
 const CONTROL_OR_AMBIGUOUS_URI = /[\u0000-\u0020\u007f\\]/u;
 const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
 const DEFAULT_MAX_INPUT_LENGTH = 256 * 1024;
 const SELF_CLOSING_BB_TAGS = new Set(["*", "br"]);
-const PAIRED_BB_TAGS = new Set<string>(
-  BB_TAGS.filter((tag) => !SELF_CLOSING_BB_TAGS.has(tag)),
-);
+const PAIRED_BB_TAGS = new Set<string>(BB_TAGS.filter((tag) => !SELF_CLOSING_BB_TAGS.has(tag)));
 
 const STRICT_BBCODE_CONFIG: Config & { RETURN_DOM_FRAGMENT: true } = {
-  ALLOWED_ATTR: [
-    "alt",
-    "color",
-    "decoding",
-    "href",
-    "loading",
-    "referrerpolicy",
-    "rel",
-    "size",
-    "src",
-    "type",
-  ],
+  ALLOWED_ATTR: ["alt", "color", "decoding", "href", "loading", "referrerpolicy", "rel", "size", "src", "type"],
   ALLOWED_TAGS: [...SAFE_TAGS],
   ALLOWED_URI_REGEXP: SAFE_URI,
   ALLOW_ARIA_ATTR: false,
   ALLOW_DATA_ATTR: false,
   ALLOW_UNKNOWN_PROTOCOLS: false,
-  FORBID_ATTR: [
-    "autofocus",
-    "contenteditable",
-    "nonce",
-    "srcdoc",
-    "style",
-  ],
+  FORBID_ATTR: ["autofocus", "contenteditable", "nonce", "srcdoc", "style"],
   FORBID_TAGS: [...DROPPED_TAGS],
   KEEP_CONTENT: true,
   PARSER_MEDIA_TYPE: "text/html",
@@ -206,9 +176,7 @@ const asArray = (content: ParsedTagNode["content"]): ParsedNode[] => {
 };
 
 const isTagNode = (node: ParsedNode): node is ParsedTagNode =>
-  typeof node === "object" &&
-  node !== null &&
-  typeof (node as Partial<ParsedTagNode>).tag === "string";
+  typeof node === "object" && node !== null && typeof (node as Partial<ParsedTagNode>).tag === "string";
 
 const escapeHtml = (value: string): string =>
   value
@@ -228,10 +196,7 @@ const plainContent = (content: ParsedTagNode["content"]): string =>
     })
     .join("");
 
-const namedAttribute = (
-  node: ParsedTagNode,
-  names: readonly string[],
-): string | undefined => {
+const namedAttribute = (node: ParsedTagNode, names: readonly string[]): string | undefined => {
   const entries = Object.entries(node.attrs ?? {});
   for (const name of names) {
     const entry = entries.find(([key]) => key.toLowerCase() === name);
@@ -242,29 +207,19 @@ const namedAttribute = (
 
 const defaultAttribute = (node: ParsedTagNode): string | undefined => {
   const entries = Object.entries(node.attrs ?? {});
-  const unique = entries.find(
-    ([key, value]) => typeof value === "string" && key === value,
-  )?.[1];
+  const unique = entries.find(([key, value]) => typeof value === "string" && key === value)?.[1];
   return typeof unique === "string" ? unique : undefined;
 };
 
-const bbcodeAttribute = (
-  node: ParsedTagNode,
-  names: readonly string[] = [],
-): string | undefined =>
+const bbcodeAttribute = (node: ParsedTagNode, names: readonly string[] = []): string | undefined =>
   namedAttribute(node, names) ?? defaultAttribute(node);
 
-const safeUrl = (
-  raw: string | undefined,
-  protocols: ReadonlySet<string>,
-): string | undefined => {
+const safeUrl = (raw: string | undefined, protocols: ReadonlySet<string>): string | undefined => {
   const value = raw?.trim();
   if (!value || CONTROL_OR_AMBIGUOUS_URI.test(value)) return undefined;
   try {
     const parsed = new URL(value);
-    return protocols.has(parsed.protocol.toLowerCase())
-      ? parsed.href
-      : undefined;
+    return protocols.has(parsed.protocol.toLowerCase()) ? parsed.href : undefined;
   } catch {
     return undefined;
   }
@@ -274,11 +229,7 @@ const safeColor = (raw: string | undefined): string | undefined => {
   const value = raw?.trim().toLowerCase();
   if (!value) return undefined;
   if (NAMED_COLORS.has(value)) return value;
-  return /^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/u.test(
-    value,
-  )
-    ? value
-    : undefined;
+  return /^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/u.test(value) ? value : undefined;
 };
 
 const safeFontSize = (raw: string | undefined): string | undefined => {
@@ -305,10 +256,7 @@ const safeFontSize = (raw: string | undefined): string | undefined => {
   return "7";
 };
 
-const hasMalformedKnownTag = (
-  nodes: readonly ParsedNode[],
-  depth = 0,
-): boolean => {
+const hasMalformedKnownTag = (nodes: readonly ParsedNode[], depth = 0): boolean => {
   if (depth > 128) return true;
   for (const node of nodes) {
     if (!isTagNode(node)) continue;
@@ -357,9 +305,7 @@ export const recoverBbcodeStructure = (source: string): string => {
 
     const tokenValue = token.getValue();
     const closing = tokenValue.startsWith("/");
-    const name = (closing ? tokenValue.slice(1) : tokenValue)
-      .trim()
-      .toLowerCase();
+    const name = (closing ? tokenValue.slice(1) : tokenValue).trim().toLowerCase();
     if (!PAIRED_BB_TAGS.has(name) && !SELF_CLOSING_BB_TAGS.has(name)) {
       continue;
     }
@@ -407,10 +353,7 @@ interface TransformContext {
   readonly insideList: boolean;
 }
 
-const transformContent = (
-  content: ParsedTagNode["content"],
-  context: TransformContext,
-): SafeNode[] =>
+const transformContent = (content: ParsedTagNode["content"], context: TransformContext): SafeNode[] =>
   asArray(content).flatMap((node) => transformNode(node, context));
 
 const hasVisibleContent = (nodes: readonly ParsedNode[]): boolean =>
@@ -421,10 +364,7 @@ const hasVisibleContent = (nodes: readonly ParsedNode[]): boolean =>
     return isTagNode(node);
   });
 
-const transformList = (
-  node: ParsedTagNode,
-  context: TransformContext,
-): SafeNode[] => {
+const transformList = (node: ParsedTagNode, context: TransformContext): SafeNode[] => {
   const items: ParsedNode[][] = [];
   let pending: ParsedNode[] = [];
   let sawMarker = false;
@@ -458,9 +398,7 @@ const transformList = (
   const list = safeTag(
     ordered ? "ol" : "ul",
     ordered && marker && marker !== "1"
-      ? { type: marker === marker.toUpperCase()
-          ? marker.toUpperCase()
-          : marker.toLowerCase() }
+      ? { type: marker === marker.toUpperCase() ? marker.toUpperCase() : marker.toLowerCase() }
       : {},
     items.map((item) =>
       safeTag(
@@ -477,10 +415,7 @@ const transformList = (
   return [list];
 };
 
-const transformNode = (
-  node: ParsedNode,
-  context: TransformContext,
-): SafeNode[] => {
+const transformNode = (node: ParsedNode, context: TransformContext): SafeNode[] => {
   if (context.depth > 128) throw new RangeError("BBCode nesting is too deep");
   if (typeof node === "string" || typeof node === "number") {
     return [escapeHtml(String(node))];
@@ -507,38 +442,24 @@ const transformNode = (
       const attribution = bbcodeAttribute(node, ["author"]);
       return [
         safeTag("blockquote", {}, [
-          ...(attribution
-            ? [safeTag("cite", {}, [escapeHtml(attribution)])]
-            : []),
+          ...(attribution ? [safeTag("cite", {}, [escapeHtml(attribution)])] : []),
           ...children(),
         ]),
       ];
     }
     case "code":
-      return [
-        safeTag("pre", {}, [
-          safeTag("code", {}, [escapeHtml(plainContent(node.content))]),
-        ]),
-      ];
+      return [safeTag("pre", {}, [safeTag("code", {}, [escapeHtml(plainContent(node.content))])])];
     case "url": {
       const href = safeUrl(
-        bbcodeAttribute(node, ["href", "url"]) ??
-          plainContent(node.content),
+        bbcodeAttribute(node, ["href", "url"]) ?? plainContent(node.content),
         new Set(["http:", "https:", "mailto:"]),
       );
       const content = children();
       if (!href) return content;
-      return [
-        safeTag(
-          "a",
-          { href, rel: "noopener noreferrer" },
-          content.length ? content : [escapeHtml(href)],
-        ),
-      ];
+      return [safeTag("a", { href, rel: "noopener noreferrer" }, content.length ? content : [escapeHtml(href)])];
     }
     case "img": {
-      const rawSource =
-        bbcodeAttribute(node, ["src"]) ?? plainContent(node.content);
+      const rawSource = bbcodeAttribute(node, ["src"]) ?? plainContent(node.content);
       const source = safeUrl(rawSource, new Set(["http:", "https:"]));
       if (!context.allowRemoteImages || !source) {
         const fallback = plainContent(node.content) || rawSource || "";
@@ -561,30 +482,19 @@ const transformNode = (
     case "list":
       return transformList(node, context);
     case "*":
-      return context.insideList
-        ? [safeTag("li", {}, children())]
-        : [escapeHtml("[*]"), ...children()];
+      return context.insideList ? [safeTag("li", {}, children())] : [escapeHtml("[*]"), ...children()];
     case "color": {
       const color = safeColor(bbcodeAttribute(node, ["color"]));
-      return color
-        ? [safeTag("font", { color }, children())]
-        : children();
+      return color ? [safeTag("font", { color }, children())] : children();
     }
     case "size": {
       const size = safeFontSize(bbcodeAttribute(node, ["size"]));
-      return size
-        ? [safeTag("font", { size }, children())]
-        : children();
+      return size ? [safeTag("font", { size }, children())] : children();
     }
     case "ruby": {
       const annotation = bbcodeAttribute(node, ["ruby", "rt"]);
       if (!annotation) return children();
-      return [
-        safeTag("ruby", {}, [
-          safeTag("rb", {}, children()),
-          safeTag("rt", {}, [escapeHtml(annotation)]),
-        ]),
-      ];
+      return [safeTag("ruby", {}, [safeTag("rb", {}, children()), safeTag("rt", {}, [escapeHtml(annotation)])])];
     }
     case "br":
       return [safeTag("br", {}, null)];
@@ -593,9 +503,7 @@ const transformNode = (
   }
 };
 
-const purifierFor = (
-  document: Document,
-): ReturnType<typeof createDOMPurify> | undefined => {
+const purifierFor = (document: Document): ReturnType<typeof createDOMPurify> | undefined => {
   const view = document.defaultView;
   if (!view) return undefined;
   const key = view as unknown as object;
@@ -606,10 +514,7 @@ const purifierFor = (
   return purifier;
 };
 
-const removeUnsafeNodesAndAttributes = (
-  fragment: DocumentFragment,
-  allowRemoteImages: boolean,
-): DocumentFragment => {
+const removeUnsafeNodesAndAttributes = (fragment: DocumentFragment, allowRemoteImages: boolean): DocumentFragment => {
   const clean = (node: Node): void => {
     if (node.nodeType === 8) {
       node.parentNode?.removeChild(node);
@@ -622,16 +527,8 @@ const removeUnsafeNodesAndAttributes = (
 
     const element = node as Element;
     const tag = element.localName.toLowerCase();
-    if (
-      element.namespaceURI !== HTML_NAMESPACE ||
-      !SAFE_TAGS.has(tag) ||
-      (tag === "img" && !allowRemoteImages)
-    ) {
-      if (
-        element.namespaceURI !== HTML_NAMESPACE ||
-        DROPPED_TAGS.has(tag) ||
-        tag === "img"
-      ) {
+    if (element.namespaceURI !== HTML_NAMESPACE || !SAFE_TAGS.has(tag) || (tag === "img" && !allowRemoteImages)) {
+      if (element.namespaceURI !== HTML_NAMESPACE || DROPPED_TAGS.has(tag) || tag === "img") {
         element.remove();
         return;
       }
@@ -647,18 +544,12 @@ const removeUnsafeNodesAndAttributes = (
       }
     }
     if (tag === "a") {
-      const href = safeUrl(
-        element.getAttribute("href") ?? undefined,
-        new Set(["http:", "https:", "mailto:"]),
-      );
+      const href = safeUrl(element.getAttribute("href") ?? undefined, new Set(["http:", "https:", "mailto:"]));
       if (href) element.setAttribute("href", href);
       else element.removeAttribute("href");
     }
     if (tag === "img") {
-      const source = safeUrl(
-        element.getAttribute("src") ?? undefined,
-        new Set(["http:", "https:"]),
-      );
+      const source = safeUrl(element.getAttribute("src") ?? undefined, new Set(["http:", "https:"]));
       if (!source) {
         element.remove();
         return;
@@ -672,10 +563,7 @@ const removeUnsafeNodesAndAttributes = (
   return fragment;
 };
 
-const plainFragment = (
-  document: Document,
-  source: string,
-): DocumentFragment => {
+const plainFragment = (document: Document, source: string): DocumentFragment => {
   const fragment = document.createDocumentFragment();
   fragment.append(document.createTextNode(source));
   return fragment;
@@ -695,11 +583,7 @@ export const renderBbcodeToFragment = (
 ): DocumentFragment => {
   const input = String(source);
   const maxInputLength = options.maxInputLength ?? DEFAULT_MAX_INPUT_LENGTH;
-  if (
-    !Number.isSafeInteger(maxInputLength) ||
-    maxInputLength < 1 ||
-    input.length > maxInputLength
-  ) {
+  if (!Number.isSafeInteger(maxInputLength) || maxInputLength < 1 || input.length > maxInputLength) {
     return plainFragment(document, input);
   }
 
@@ -728,33 +612,21 @@ export const renderBbcodeToFragment = (
     // BBob's 4.4.1 declaration emits optional position fields as explicit
     // `undefined`, which is incompatible with exactOptionalPropertyTypes even
     // though the renderer only reads this structural tag/content tree.
-    const markup = renderBbobHtml(
-      safeTree as unknown as Parameters<typeof renderBbobHtml>[0],
-    );
+    const markup = renderBbobHtml(safeTree as unknown as Parameters<typeof renderBbobHtml>[0]);
     const purifier = purifierFor(document);
     if (!purifier) return plainFragment(document, input);
     // A neutral root also protects the first text/formatting node from
     // DOM-emulator traversal quirks; it is removed before the result escapes.
-    const sanitized = purifier.sanitize(
-      `<div>${markup}</div>`,
-      STRICT_BBCODE_CONFIG,
-    );
+    const sanitized = purifier.sanitize(`<div>${markup}</div>`, STRICT_BBCODE_CONFIG);
     if (sanitized.nodeType !== 11) return plainFragment(document, input);
-    const owned = sanitized.ownerDocument === document
-      ? sanitized
-      : document.importNode(sanitized, true);
-    return removeUnsafeNodesAndAttributes(
-      owned,
-      options.allowRemoteImages ?? false,
-    );
+    const owned = sanitized.ownerDocument === document ? sanitized : document.importNode(sanitized, true);
+    return removeUnsafeNodesAndAttributes(owned, options.allowRemoteImages ?? false);
   } catch {
     return plainFragment(document, input);
   }
 };
 
-export const createVegaBbcodeRichTextRenderer = (
-  options: VegaBbcodeRichTextOptions = {},
-): VegaRichTextRenderer =>
+export const createVegaBbcodeRichTextRenderer = (options: VegaBbcodeRichTextOptions = {}): VegaRichTextRenderer =>
   Object.freeze({
     id: "vega-bbcode",
     formats: ["bbcode", "bb"],
@@ -764,48 +636,35 @@ export const createVegaBbcodeRichTextRenderer = (
     },
   });
 
-export const vegaBbcodeRichTextRenderer =
-  createVegaBbcodeRichTextRenderer();
+export const vegaBbcodeRichTextRenderer = createVegaBbcodeRichTextRenderer();
 
-const registerRenderer = (
-  context: VegaPluginContext,
-  renderer: VegaRichTextRenderer,
-): VegaRichTextHandle => {
+const registerRenderer = (context: VegaPluginContext, renderer: VegaRichTextRenderer): VegaRichTextHandle => {
   const service = context.service(VEGA_RICH_TEXT_SERVICE);
   if (!service) {
-    throw new ReferenceError(
-      "Vega BBCode rich text requires haneoka.vega-richtext",
-    );
+    throw new ReferenceError("Vega BBCode rich text requires haneoka.vega-richtext");
   }
   return service.register(renderer);
 };
 
-export const createVegaBbcodeRichTextPlugin = (
-  options: VegaBbcodeRichTextOptions = {},
-): VegaPlugin =>
+export const createVegaBbcodeRichTextPlugin = (options: VegaBbcodeRichTextOptions = {}): VegaPlugin =>
   defineVegaPlugin({
     manifest: {
       id: "haneoka.vega-richtext-bbcode",
       name: "Vega Rich Text BBCode",
       version: "0.1.0",
       apiVersion: 1,
-      description:
-        "Fault-tolerant BBCode rendering with strict active-content filtering",
+      description: "Fault-tolerant BBCode rendering with strict active-content filtering",
       capabilities: ["rich-text"],
       dependencies: {
         "haneoka.vega-richtext": "^0.1.0",
       },
     },
     setup(context) {
-      const registration = registerRenderer(
-        context,
-        createVegaBbcodeRichTextRenderer(options),
-      );
+      const registration = registerRenderer(context, createVegaBbcodeRichTextRenderer(options));
       return { dispose: () => registration.dispose() };
     },
   });
 
-export const vegaBbcodeRichTextPlugin =
-  createVegaBbcodeRichTextPlugin();
+export const vegaBbcodeRichTextPlugin = createVegaBbcodeRichTextPlugin();
 
 export default vegaBbcodeRichTextPlugin;
